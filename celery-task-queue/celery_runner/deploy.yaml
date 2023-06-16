@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-runner
+  namespace: sieve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: celery-runner-layer
+  template:
+    metadata:
+      labels:
+        component: celery-runner-layer
+    spec:
+      containers:
+      - name: celery-runner
+        image: htrivedi05/celery-runner:latest
+        env:
+          - name: BROKER_URI
+            value: "redis://redis-0.redis.sieve.svc.cluster.local:6379"
+          - name: BACKEND_URI
+            value: "redis://redis-0.redis.sieve.svc.cluster.local:6379"
+          - name: MODEL_URI
+            value: "http://model-layer-service.model.svc.cluster.local:8000"
+
+        ports:
+          - containerPort: 5000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: celery-runner-layer-service
+  namespace: sieve
+spec:
+  type: ClusterIP
+  selector:
+    component: celery-runner-layer
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000

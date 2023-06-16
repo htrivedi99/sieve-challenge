@@ -1,10 +1,12 @@
-from celery_runner.runner import app
+from runner import app
 import requests
+import os
 
 
 @app.task(name='tasks.run_prediction')
 def run_prediction(user_input: str):
-    response = requests.post("http://0.0.0.0:8000/predict", json={"user_input": user_input})
+    model_base_uri = os.getenv('MODEL_URI')
+    response = requests.post(f"{model_base_uri}/predict", json={"user_input": user_input})
     output = response.json()
     return output
 

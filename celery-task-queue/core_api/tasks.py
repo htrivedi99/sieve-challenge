@@ -10,7 +10,7 @@ app = Celery(
     'celery_app',
     broker=BROKER_URI,
     backend=BACKEND_URI,
-    include=['core_api.tasks']
+    include=['tasks']
 )
 
 app.conf.task_acks_late = True  # Allow tasks to be acknowledged after they are completed
@@ -24,6 +24,7 @@ app.conf.task_default_queue = 'default'
 
 @app.task(name='tasks.run_prediction')
 def run_prediction(user_input: str):
-    response = requests.post("http://0.0.0.0:8000/predict", json={"user_input": user_input})
+    model_base_uri = os.getenv('MODEL_URI')
+    response = requests.post(f"{model_base_uri}/predict", json={"user_input": user_input})
     output = response.json()
     return output

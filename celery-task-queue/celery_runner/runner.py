@@ -9,7 +9,7 @@ app = Celery(
     'celery_app',
     broker=BROKER_URI,
     backend=BACKEND_URI,
-    include=['celery_runner.tasks']
+    include=['tasks']
 )
 
 app.conf.task_acks_late = True  # Allow tasks to be acknowledged after they are completed

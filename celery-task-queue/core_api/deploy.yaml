@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-api
+  namespace: sieve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: core-api-layer
+  template:
+    metadata:
+      labels:
+        component: core-api-layer
+    spec:
+      containers:
+      - name: core-sieve-api
+        image: htrivedi05/core-sieve-api:latest
+        env:
+          - name: BROKER_URI
+            value: "redis://redis-0.redis.sieve.svc.cluster.local:6379"
+          - name: BACKEND_URI
+            value: "redis://redis-0.redis.sieve.svc.cluster.local:6379"
+          - name: MODEL_URI
+            value: "http://model-layer-service.model.svc.cluster.local:8000"
+
+        ports:
+          - containerPort: 8002
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: core-api-layer-service
+  namespace: sieve
+spec:
+  type: ClusterIP
+  selector:
+    component: core-api-layer
+  ports:
+  - port: 8002
+    protocol: TCP
+    targetPort: 8002
