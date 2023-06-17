@@ -1,5 +1,6 @@
 import os
 from celery import Celery
+import time
 import requests
 
 
@@ -17,14 +18,20 @@ app.conf.task_acks_late = True  # Allow tasks to be acknowledged after they are 
 app.conf.task_reject_on_worker_lost = True  # Reject tasks when worker connection is lost
 app.conf.task_default_retry_delay = 30  # Retry delay in seconds
 app.conf.task_max_retries = 3  # Maximum number of retries
-
-# Set the default queue
-app.conf.task_default_queue = 'default'
+app.conf.task_default_queue = 'default'  # Set the default queue
+app.conf.task_track_started = True
 
 
 @app.task(name='tasks.run_prediction')
-def run_prediction(user_input: str):
-    model_base_uri = os.getenv('MODEL_URI')
-    response = requests.post(f"{model_base_uri}/predict", json={"user_input": user_input})
-    output = response.json()
-    return output
+def run_prediction(user_input: str, start_time: float):
+    try:
+        model_base_uri = os.getenv('MODEL_URI')
+        response = requests.post(f"{model_base_uri}/predict", json={"user_input": user_input})
+        output = response.json()
+        end_time = time.time()
+        latency = end_time - start_time  # latency is in seconds
+        output["latency"] = latency
+        return output
+    except Exception as e:
+        raise e  # Need to raise exception in order to trigger retry
+

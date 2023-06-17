@@ -32,6 +32,11 @@ async def startup_event():
     load_model()
 
 
+@app.on_event("shutdown")
+def shutdown_event():
+    print("shutting down fast api server")
+
+
 @app.post("/predict")
 async def predict(data: ModelRequest):
     if not model:

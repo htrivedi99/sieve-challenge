@@ -13,9 +13,11 @@ spec:
       labels:
         component: celery-runner-layer
     spec:
+      terminationGracePeriodSeconds: 1
       containers:
       - name: celery-runner
         image: htrivedi05/celery-runner:latest
+        imagePullPolicy: Always
         env:
           - name: BROKER_URI
             value: "redis://redis-0.redis.sieve.svc.cluster.local:6379"
@@ -23,6 +25,11 @@ spec:
             value: "redis://redis-0.redis.sieve.svc.cluster.local:6379"
           - name: MODEL_URI
             value: "http://model-layer-service.model.svc.cluster.local:8000"
+        resources:
+          limits:
+            cpu: 100m
+          requests:
+            cpu: 50m
 
         ports:
           - containerPort: 5000

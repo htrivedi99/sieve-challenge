@@ -1,5 +1,5 @@
 import os
-from celery import Celery
+from celery import Celery, signals
 
 
 BROKER_URI = os.getenv("BROKER_URI") or "redis://localhost:6379"
@@ -16,7 +16,14 @@ app.conf.task_acks_late = True  # Allow tasks to be acknowledged after they are 
 app.conf.task_reject_on_worker_lost = True  # Reject tasks when worker connection is lost
 app.conf.task_default_retry_delay = 30  # Retry delay in seconds
 app.conf.task_max_retries = 3  # Maximum number of retries
+app.conf.task_default_queue = 'default'  # Set the default queue
+app.conf.task_track_started = True
 
-# Set the default queue
-app.conf.task_default_queue = 'default'
+
+def handle_sigterm(sender, **kwargs):
+    print("Received SIGTERM signal. Performing cleanup...")
+    sender.terminate()
+
+
+signals.worker_shutdown.connect(handle_sigterm)
 

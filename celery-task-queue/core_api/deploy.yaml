@@ -13,9 +13,11 @@ spec:
       labels:
         component: core-api-layer
     spec:
+      terminationGracePeriodSeconds: 1
       containers:
       - name: core-sieve-api
         image: htrivedi05/core-sieve-api:latest
+        imagePullPolicy: Always
         env:
           - name: BROKER_URI
             value: "redis://redis-0.redis.sieve.svc.cluster.local:6379"

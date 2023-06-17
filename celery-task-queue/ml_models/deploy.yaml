@@ -13,11 +13,18 @@ spec:
       labels:
         component: model-layer
     spec:
+      terminationGracePeriodSeconds: 1
       containers:
       - name: sieve-ml-model
         image: htrivedi05/sieve-ml-model:latest
+        imagePullPolicy: Always
         ports:
           - containerPort: 8000
+        resources:
+          limits:
+            cpu: 200m
+          requests:
+            cpu: 100m
 
 ---
 apiVersion: v1

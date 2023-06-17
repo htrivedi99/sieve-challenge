@@ -16,7 +16,8 @@ spec:
     spec:
       initContainers:
       - name: config
-        image: redis:6.2.3-alpine
+        image: redis:7.0.9-alpine
+        imagePullPolicy: Always
         command: [ "sh", "-c" ]
         args:
           - |
@@ -46,7 +47,7 @@ spec:
           mountPath: /tmp/redis/
       containers:
       - name: redis
-        image: redis:6.2.3-alpine
+        image: redis:7.0.9-alpine
         command: ["redis-server"]
         args: ["/etc/redis/redis.conf"]
         ports:

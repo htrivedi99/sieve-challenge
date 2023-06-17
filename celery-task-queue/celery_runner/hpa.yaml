@@ -1,0 +1,13 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: celery-horizontal-pod-autoscaler
+  namespace: sieve
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: celery-runner
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
