@@ -4,7 +4,7 @@ import os
 import time
 
 
-@app.task(name='tasks.run_prediction')
+@app.task(name='tasks.run_prediction', acks_late=True)
 def run_prediction(user_input: str, start_time: float):
     try:
         model_base_uri = os.getenv('MODEL_URI')

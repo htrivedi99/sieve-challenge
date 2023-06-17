@@ -5,9 +5,15 @@ from celery import Celery, signals
 BROKER_URI = os.getenv("BROKER_URI") or "redis://localhost:6379"
 BACKEND_URI = os.getenv("BACKEND_URI") or "redis://localhost:6379"
 
+BROKERS = [
+    BROKER_URI,
+    "redis://redis-1.redis.sieve.svc.cluster.local:6379",
+    "redis://redis-2.redis.sieve.svc.cluster.local:6379"
+]
+
 app = Celery(
     'celery_app',
-    broker=BROKER_URI,
+    broker=BROKERS,
     backend=BACKEND_URI,
     include=['tasks']
 )
@@ -22,6 +28,13 @@ app.conf.task_track_started = True
 
 def handle_sigterm(sender, **kwargs):
     print("Received SIGTERM signal. Performing cleanup...")
+    worker = sender
+    active_tasks = worker.app.control.inspect().active()
+    if active_tasks:
+        task_ids = [task['id'] for worker_tasks in active_tasks.values() for task in worker_tasks]
+        worker.app.send_task('celery.accumulate', args=(task_ids,), kwargs={'routing_key': 'default'})
+
+    # Terminate the worker gracefully
     sender.terminate()
 
 

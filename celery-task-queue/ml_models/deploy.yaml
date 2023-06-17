@@ -4,7 +4,7 @@ metadata:
   name: model
   namespace: model
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       component: model-layer

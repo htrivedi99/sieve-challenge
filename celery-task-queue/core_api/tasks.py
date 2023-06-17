@@ -1,5 +1,5 @@
 import os
-from celery import Celery
+from celery import Celery, signals
 import time
 import requests
 
@@ -7,9 +7,15 @@ import requests
 BROKER_URI = os.getenv("BROKER_URI") or "redis://localhost:6379"
 BACKEND_URI = os.getenv("BACKEND_URI") or "redis://localhost:6379"
 
+BROKERS = [
+    BROKER_URI,
+    "redis://redis-1.redis.sieve.svc.cluster.local:6379",
+    "redis://redis-2.redis.sieve.svc.cluster.local:6379"
+]
+
 app = Celery(
     'celery_app',
-    broker=BROKER_URI,
+    broker=BROKERS,
     backend=BACKEND_URI,
     include=['tasks']
 )
@@ -22,7 +28,7 @@ app.conf.task_default_queue = 'default'  # Set the default queue
 app.conf.task_track_started = True
 
 
-@app.task(name='tasks.run_prediction')
+@app.task(name='tasks.run_prediction', acks_late=True)
 def run_prediction(user_input: str, start_time: float):
     try:
         model_base_uri = os.getenv('MODEL_URI')
@@ -34,4 +40,20 @@ def run_prediction(user_input: str, start_time: float):
         return output
     except Exception as e:
         raise e  # Need to raise exception in order to trigger retry
+
+
+def handle_sigterm(sender, **kwargs):
+    print("Received SIGTERM signal. Performing cleanup...")
+    worker = sender
+    active_tasks = worker.app.control.inspect().active()
+    if active_tasks:
+        task_ids = [task['id'] for worker_tasks in active_tasks.values() for task in worker_tasks]
+        worker.app.send_task('celery.accumulate', args=(task_ids,), kwargs={'routing_key': 'default'})
+
+    # Terminate the worker gracefully
+    sender.terminate()
+
+
+signals.worker_shutdown.connect(handle_sigterm)
+
 

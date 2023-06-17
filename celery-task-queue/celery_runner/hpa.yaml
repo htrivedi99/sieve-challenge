@@ -8,6 +8,6 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: celery-runner
-  minReplicas: 1
-  maxReplicas: 3
+  minReplicas: 3
+  maxReplicas: 6
   targetCPUUtilizationPercentage: 70
