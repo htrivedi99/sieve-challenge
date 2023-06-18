@@ -39,3 +39,6 @@ ML Model setup:
 * Go into the celery-task-queue/ml_models directory and run the following commands
 1. kubectl create -f deploy.yaml
 2. kubectl create -f hpa.yaml
+
+Port-forward the api service:
+1. kubectl port-forward svc/core-api-layer-service 8002 -n sieve
